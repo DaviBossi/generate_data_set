@@ -2,8 +2,8 @@ from PIL import Image
 import numpy as np
 
 #Defina aqui qual imagem sera cortada e onde os pontos serao salvos
-image_input = "./input/JAN_2025/height_map.png"
-output_path = "./output/Mina_JAN_2025"
+image_input = "images/height_map/height_map.png"
+output_path = "generate_data_set/generate_data_set/src"
 
 def import_image(image_input):
     img = Image.open(image_input)
@@ -15,19 +15,23 @@ def get_shape(img):
     
     return width, height
 
-def generate_random_points(width, height):
+def grid_points(width, height, tile=256, stride=32, include_borders=True):
+    # gera eixos x,y em passos = stride
+    xs = list(range(0, max(1, width  - tile + 1), stride))
+    ys = list(range(0, max(1, height - tile + 1), stride))
 
-    points = set()
-    x = y = 0
-    
-    while y < height:
-        while x < width:
-            points.add((x,y))
-            x += 2
-        x = 0
-        y += 2
-            
-    return np.array(list(points))
+    # garante que o último patch encoste na borda direita/baixo
+    if include_borders:
+        last_x = max(0, width  - tile)
+        last_y = max(0, height - tile)
+        if xs[-1] != last_x:
+            xs.append(last_x)
+        if ys[-1] != last_y:
+            ys.append(last_y)
+
+    # grade cartesiana (ordenada, reprodutível)
+    points = [(x, y) for y in ys for x in xs]
+    return points
 
 def save_points(points, output_path):
     
@@ -41,7 +45,7 @@ print("Getting shape of the image...")
 width, height = get_shape(img)
 
 print("Generating random points...")
-points = generate_random_points(width, height)
+points = grid_points(width,height)
 
 print("Saving points to file...")
 save_points(points, output_path)

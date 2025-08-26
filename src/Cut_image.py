@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 from tqdm import tqdm
 
-output_path = "./output/Mina_JAN_2025"
+output_path = "data-set/Hm_to_texture"
 
 
 def import_image(image_input):
@@ -18,23 +18,29 @@ def import_points(points_file):
     return list_of_points
 
 
-def cut_image(img, points, size, type):
+def cut_image(img, points, type):
 
-    for i, (x, y) in enumerate(tqdm(points, desc=f"Cutting images in {size} pixels : ")):
+    for i, (x, y) in enumerate(tqdm(points, desc=f"Cutting images {type} in pixels : ")):
 
-        box = (x, y, x + size, y + size)
+        box = (x, y, x + 256, y + 256)
         
         cut_img = img.crop(box)
 
-        cut_img.save(f"{output_path}/{size}x{size}/{type}/cut_image_{i}.png")
+        cut_img.save(f"{output_path}/{type}/cut_image_{i}.png")
 
 
 print("Importando Pontos para a textura")
-texture_points = import_points("./output/Mina_JAN_2025/texture_points.txt")
+texture_points = import_points("generate_data_set/generate_data_set/src/points.txt")
         
 print("Importando textura")
-texture = import_image("./input/Textura.png")
+texture = import_image("images/texture/tx_cortado.png")
 
-print("Cortando textura em 32 pixels")
-cut_image(texture, texture_points, 32 , "texture")
+print("Importando textura")
+height_map = import_image("images/height_map/hm_cortado.png")
+
+print("Cortando textura em 256 pixels")
+cut_image(texture, texture_points, "texture")
+
+print("Cortando height_map em 256 pixels")
+cut_image(height_map, texture_points, "height_map")
 
